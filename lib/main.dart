@@ -7,7 +7,7 @@ void main() {
   runApp(MyApp());
 }
 
-const priColor = Color(0xFF66ffad);
+const priColor = Color(0xFF1be374);
 const whiteColor = Colors.white;
 
 class MyApp extends StatelessWidget {
@@ -35,15 +35,66 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
+
+  @override
+  void initState() {
+    super.initState();
+    if (!_locationCheceked) {
+      _getLocation();
+      print(address);
+    }
+    print(address);
+  }
+
   String _location = "BRAK";
   String _locationLatStr = "BRAK";
   String _locationLongStr = "BRAK";
   double _locationLat = 0;
   double _locationLong = 0;
   String _weatherStr = "BRAK";
+  bool _locationCheceked = false;
 
   var _decodedCoords;
   String address;
+
+  Future<void> _showMyDialogLocation() async {
+    var addressDialog = address;
+    return showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Lokalizacja'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text('Obecna lokalizajca to:'),
+                Text(
+                  '$addressDialog',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: Text('Odśiweż'),
+              onPressed: () {
+                _getLocation();
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: Text('Ok'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   void _getLocation() async {
     Position position =
@@ -56,6 +107,10 @@ class _MyHomePageState extends State<MyHomePage> {
       _locationLong = double.parse(_locationLongStr);
     });
     _getAdress();
+  }
+
+  Future sleep1() {
+    return new Future.delayed(const Duration(seconds: 4), () => "4");
   }
 
   void _getAdress() async {
@@ -82,21 +137,62 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
+      drawer: ClipRRect(
+          borderRadius: BorderRadius.only(
+              topRight: Radius.circular(35), bottomRight: Radius.circular(35)),
+          child: Drawer(
+            child: ListView(
+              children: [
+                new Container(
+                  child: new DrawerHeader(
+                      child: Padding(
+                    padding: const EdgeInsets.fromLTRB(10, 40, 0, 0),
+                    child: Text(
+                      "vibe check",
+                      style: TextStyle(color: whiteColor, fontSize: 45),
+                    ),
+                  )),
+                  color: priColor,
+                ),
+                new Container(
+                  color: Colors.blueAccent,
+                  child: new Column(),
+                )
+              ],
+            ),
+          )),
       bottomNavigationBar: BottomAppBar(
         child: Row(
           children: [
             IconButton(
-                icon: Icon(Icons.menu), color: priColor, onPressed: () {}),
+                icon: Icon(Icons.menu),
+                color: priColor,
+                onPressed: () => _scaffoldKey.currentState.openDrawer()),
+            IconButton(
+                icon: Icon(Icons.calendar_today),
+                color: priColor,
+                onPressed: () {
+                  Navigator.of(context).push(MaterialPageRoute(
+                      builder: (BuildContext context) => CalendarPage()));
+                }),
+            IconButton(
+                icon: Icon(Icons.notifications),
+                color: priColor,
+                onPressed: () {
+                  Navigator.of(context).push(MaterialPageRoute(
+                      builder: (BuildContext context) => NotificationsPage()));
+                }),
             Spacer(),
             IconButton(
-                icon: Icon(Icons.cloud, color: priColor),
+                icon: Icon(Icons.wb_sunny_rounded, color: priColor),
                 onPressed: () {
                   _getWeather();
                 }),
             IconButton(
                 icon: Icon(Icons.location_on, color: priColor),
                 onPressed: () {
-                  _getLocation();
+                  _showMyDialogLocation();
                 }),
             IconButton(
                 icon: Icon(Icons.help), color: priColor, onPressed: () {}),
@@ -104,13 +200,15 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        child: Icon(Icons.home),
+        child: Icon(Icons.theater_comedy),
         onPressed: () {},
         backgroundColor: priColor,
         elevation: 0,
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       appBar: AppBar(
+        automaticallyImplyLeading: false, // ukrycie Hamburgera u góry
+        actions: <Widget>[Container()],
         title: Text(
           "code week (vibecheck)",
           style: TextStyle(color: whiteColor),
@@ -121,18 +219,46 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Text(
-              '$_location',
-              style: Theme.of(context).textTheme.headline4,
-            ),
-            Text(
-              '$address',
-              style: Theme.of(context).textTheme.headline4,
-            ),
             Text('$_weatherStr'),
           ],
         ),
       ),
+    );
+  }
+}
+
+class NotificationsPage extends StatefulWidget {
+  NotificationsPage({Key key}) : super(key: key);
+
+  @override
+  _NotificationsPageState createState() => _NotificationsPageState();
+}
+
+class _NotificationsPageState extends State<NotificationsPage> {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      child: Scaffold(
+        appBar: AppBar(
+          backgroundColor: priColor,
+        ),
+      ),
+    );
+  }
+}
+
+class CalendarPage extends StatefulWidget {
+  CalendarPage({Key key}) : super(key: key);
+
+  @override
+  _CalendarPageState createState() => _CalendarPageState();
+}
+
+class _CalendarPageState extends State<CalendarPage> {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      child: Scaffold(),
     );
   }
 }
