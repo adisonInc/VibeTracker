@@ -26,6 +26,9 @@ dependencies:
   geolocator: ^6.0.0+4
   geocoder: ^0.2.1
   weather: ^1.2.3
+  dependencies:
+  table_calendar: ^2.2.3
+  intl: ^0.16.1
 
 
   # The following adds the Cupertino Icons font to your application.

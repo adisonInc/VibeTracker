@@ -2,12 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoder/geocoder.dart';
 import 'package:weather/weather.dart';
+import 'package:table_calendar/table_calendar.dart';
+import 'package:intl/date_symbol_data_local.dart';
+import 'package:intl/intl.dart';
 
 void main() {
-  runApp(MyApp());
+  initializeDateFormatting().then((_) => runApp(MyApp()));
 }
 
-const priColor = Color(0xFF1be374);
+const priColor = Color(0xFF32db7e);
+const mediColor = Color(0xFFf2e200);
+const worstColor = Color(0xFFff4c30);
+const worseColor = Color(0xFFff9f30);
+const betterColor = Color(0xFFaaff00);
+const bestColor = Color(0xFFF33ff00);
 const whiteColor = Colors.white;
 
 class MyApp extends StatelessWidget {
@@ -42,9 +50,19 @@ class _MyHomePageState extends State<MyHomePage> {
     super.initState();
     if (!_locationCheceked) {
       _getLocation();
-      print(address);
     }
-    print(address);
+    if (!_weatherCheceked) {
+      _getWeather();
+    }
+    _calendarController = CalendarController();
+    _getDay();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    _calendarController.dispose();
+    super.dispose();
   }
 
   String _location = "BRAK";
@@ -52,11 +70,25 @@ class _MyHomePageState extends State<MyHomePage> {
   String _locationLongStr = "BRAK";
   double _locationLat = 0;
   double _locationLong = 0;
-  String _weatherStr = "BRAK";
+  String _weatherFeel = "BRAK";
+  String _weatherTemp = "BRAK";
+  String _weatherCloud = "BRAK";
+  String _weatherPress = "BRAK";
   bool _locationCheceked = false;
-
+  bool _weatherCheceked = false;
+  CalendarController _calendarController;
   var _decodedCoords;
   String address;
+  var now;
+  var formatter;
+  String formattedDate;
+  var formattedDateSub;
+  var nowSub;
+  var formatterSub;
+  var formattedDateAdd;
+  var nowAdd;
+  var formatterAdd;
+  final _controller = TextEditingController();
 
   Future<void> _showMyDialogLocation() async {
     var addressDialog = address;
@@ -129,8 +161,24 @@ class _MyHomePageState extends State<MyHomePage> {
         language: Language.POLISH);
     Weather w = await wf.currentWeatherByLocation(_locationLat, _locationLong);
     setState(() {
-      _weatherStr =
-          "Temperatura Odzcuwalna: ${w.tempFeelsLike}\nTemperatura: ${w.temperature}\nZachmurzenie ${w.cloudiness}\nCiśnienie ${w.pressure}";
+      _weatherFeel = "${w.tempFeelsLike}";
+      _weatherTemp = "${w.temperature}";
+      _weatherCloud = "${w.cloudiness}";
+      _weatherPress = "${w.pressure}";
+    });
+  }
+
+  void _getDay() {
+    setState(() {
+      now = new DateTime.now();
+      formatter = new DateFormat('dd');
+      formattedDate = formatter.format(now);
+      nowSub = new DateTime.now().subtract(new Duration(days: 1));
+      formatterSub = new DateFormat('dd');
+      formattedDateSub = formatter.format(nowSub);
+      nowAdd = new DateTime.now().add(new Duration(days: 1));
+      formatterAdd = new DateFormat('dd');
+      formattedDateAdd = formatter.format(nowAdd);
     });
   }
 
@@ -219,7 +267,276 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Text('$_weatherStr'),
+            Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Flexible(
+                    flex: 1,
+                    child: Container(
+                      width: MediaQuery.of(context).size.width / 5,
+                      height: MediaQuery.of(context).size.height / 10,
+                      color: priColor,
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Column(
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(0, 0, 38, 0),
+                              child: Text(
+                                "$formattedDateSub",
+                                style: TextStyle(
+                                    color: whiteColor,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 20),
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
+                              child: Text(
+                                "Wczoraj",
+                                style: TextStyle(
+                                    color: whiteColor,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 15),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  Flexible(
+                    flex: 1,
+                    child: Container(
+                      width: MediaQuery.of(context).size.width / 4,
+                      height: MediaQuery.of(context).size.height / 8,
+                      color: priColor,
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Column(
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(0, 0, 40, 0),
+                              child: Text(
+                                "$formattedDate",
+                                style: TextStyle(
+                                    color: whiteColor,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 25),
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Text(
+                                "Dzisiaj",
+                                style: TextStyle(
+                                    color: whiteColor,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 20),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  Flexible(
+                    flex: 1,
+                    child: Container(
+                      width: MediaQuery.of(context).size.width / 5,
+                      height: MediaQuery.of(context).size.height / 10,
+                      color: priColor,
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Column(
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(0, 0, 38, 0),
+                              child: Text(
+                                "$formattedDateAdd",
+                                style: TextStyle(
+                                    color: whiteColor,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 20),
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Text(
+                                "Jutro",
+                                style: TextStyle(
+                                    color: whiteColor,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Spacer(
+              flex: 1,
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(0, 0, 0, 25),
+              child: Text(
+                "Jak sie dzisiaj czujesz?",
+                style: TextStyle(
+                    color: priColor, fontWeight: FontWeight.bold, fontSize: 16),
+              ),
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ClipOval(
+                  child: Material(
+                    color: worstColor, // button color
+                    child: InkWell(
+                      // inkwell color
+                      child: SizedBox(width: 56, height: 56),
+                      onTap: () {},
+                    ),
+                  ),
+                ),
+                ClipOval(
+                  child: Material(
+                    color: worseColor, // button color
+                    child: InkWell(
+                      // inkwell color
+                      child: SizedBox(
+                        width: 56,
+                        height: 56,
+                      ),
+                      onTap: () {},
+                    ),
+                  ),
+                ),
+                ClipOval(
+                  child: Material(
+                    color: mediColor, // button color
+                    child: InkWell(
+                      // inkwell color
+                      child: SizedBox(
+                        width: 56,
+                        height: 56,
+                      ),
+                      onTap: () {},
+                    ),
+                  ),
+                ),
+                ClipOval(
+                  child: Material(
+                    color: betterColor, // button color
+                    child: InkWell(
+                      // inkwell color
+                      child: SizedBox(
+                        width: 56,
+                        height: 56,
+                      ),
+                      onTap: () {},
+                    ),
+                  ),
+                ),
+                ClipOval(
+                  child: Material(
+                    color: bestColor, // button color
+                    child: InkWell(
+                      // inkwell color
+                      child: SizedBox(
+                        width: 56,
+                        height: 56,
+                      ),
+                      onTap: () {},
+                    ),
+                  ),
+                )
+              ],
+            ),
+            Spacer(
+              flex: 1,
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(0, 0, 0, 15),
+              child: Text(
+                "Co cie dzisiaj spotkało?",
+                style: TextStyle(
+                    color: priColor, fontWeight: FontWeight.bold, fontSize: 16),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(15, 0, 15, 0),
+              child: TextFormField(
+                controller: _controller,
+                decoration: InputDecoration(
+                    border: OutlineInputBorder(),
+                    focusColor: priColor,
+                    hoverColor: priColor),
+              ),
+            ),
+            Spacer(
+              flex: 1,
+            ),
+            Row(
+              children: [
+                Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 0, 0, 0),
+                    child: Text(
+                      "Pogda dzisiaj:",
+                      style: TextStyle(
+                          color: priColor,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 20),
+                    )),
+              ],
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 0, 0, 0),
+              child: RichText(
+                text: TextSpan(
+                  text: "Temp. Odzczuwalna: ",
+                  style: TextStyle(fontSize: 20, color: Colors.black),
+                  children: <TextSpan>[
+                    TextSpan(
+                        text: '$_weatherFeel\n',
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, color: priColor)),
+                    TextSpan(
+                      text: 'Temperatura: ',
+                      style: TextStyle(fontSize: 20, color: Colors.black),
+                    ),
+                    TextSpan(
+                        text: '$_weatherTemp\n',
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, color: priColor)),
+                    TextSpan(
+                      text: 'Zachmurzenie: ',
+                      style: TextStyle(fontSize: 20, color: Colors.black),
+                    ),
+                    TextSpan(
+                        text: '$_weatherCloud%\n',
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, color: priColor)),
+                    TextSpan(
+                      text: 'Ciśnienie: ',
+                      style: TextStyle(fontSize: 20, color: Colors.black),
+                    ),
+                    TextSpan(
+                        text: '$_weatherPress hPa\n',
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, color: priColor)),
+                  ],
+                ),
+              ),
+            ),
+            Spacer(
+              flex: 1,
+            ),
           ],
         ),
       ),
