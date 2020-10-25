@@ -157,7 +157,7 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
         children: [
           Text(
-              "Podstawowym celem VibeTrackera, jest świadomość zrowia psychicznego użytkownika. W aplikacji możesz opisać swój dzień za pomocą emotek. Człowiek w zależności od pogody może mieć inny nastrój. Dlatego w aplikacji jest wbudowana prognoza pogdody.\n\n\n Aplikacja została stworzona podzczas konkursu Hack Heroes 2020 przez 2 uczniów szkoły średniej")
+              " Podstawowym celem VibeTrackera, jest świadomość zrowia psychicznego użytkownika. W aplikacji możesz opisać swój dzień za pomocą emotek. Człowiek w zależności od pogody może mieć inny nastrój. Dlatego w aplikacji jest wbudowana prognoza pogdody.\n\n\n Aplikacja została stworzona podzczas konkursu Hack Heroes 2020 przez 2 uczniów szkoły średniej")
         ]);
   }
 
@@ -184,7 +184,7 @@ class _MyHomePageState extends State<MyHomePage> {
               child: Text('Odśiweż'),
               onPressed: () {
                 _getLocation();
-                _getAdress();
+
                 Navigator.of(context).pop();
               },
             ),
