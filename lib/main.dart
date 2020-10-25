@@ -768,7 +768,7 @@ class _CalendarPageState extends State<CalendarPage> {
                   ),
                   RichText(
                     text: TextSpan(
-                      text: "Wpisany Tekst: ",
+                      text: "Wpisany tekst: ",
                       style: TextStyle(fontSize: 20, color: Colors.black),
                       children: <TextSpan>[
                         TextSpan(
