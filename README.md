@@ -11,3 +11,8 @@ Człowiek w zależności od pogody może mieć inny nastrój. Dlatego w aplikacj
 
 Aplikacja została stworzona podzczas konkursu Hack Heroes 2020 przez 2 uczniów szkoły średniej
 
+## Technologie
+
+Aplikacja używa lokalizacji aby określić pogodę 
+oraz jest połączona z chmurą (firebase) aby wysyłać codziennie powiadomienia
+
