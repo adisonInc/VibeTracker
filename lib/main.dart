@@ -564,31 +564,6 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 }
 
-class NotificationsPage extends StatefulWidget {
-  NotificationsPage({Key key}) : super(key: key);
-
-  @override
-  _NotificationsPageState createState() => _NotificationsPageState();
-}
-
-class _NotificationsPageState extends State<NotificationsPage> {
-  @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      child: Scaffold(
-        appBar: AppBar(
-          backgroundColor: priColor,
-        ),
-      ),
-    );
-  }
-}
-
 class CalendarPage extends StatefulWidget {
   CalendarPage({Key key}) : super(key: key);
 
