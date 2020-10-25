@@ -24,7 +24,7 @@ dependencies:
   flutter:
     sdk: flutter
   
-  geolocator: ^6.1.0
+  geolocator: ^6.0.0+4
   geocoder: ^0.2.1
   weather: ^1.2.3
   dependencies:

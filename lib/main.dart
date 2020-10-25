@@ -181,9 +181,11 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
           actions: <Widget>[
             TextButton(
-              child: Text('Odśiweż'),
+              child: Text('Odśwież'),
               onPressed: () {
                 _getLocation();
+                _getWeather();
+                print("essa");
 
                 Navigator.of(context).pop();
               },
@@ -234,8 +236,10 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _getLocation() async {
-    LocationPermission permission = await Geolocator.requestPermission();
-    Position position = await Geolocator.getCurrentPosition();
+    Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high);
+    print(position);
+
     setState(() {
       _location = "${position.latitude}, ${position.longitude}";
       _locationLatStr = "${position.latitude}";
