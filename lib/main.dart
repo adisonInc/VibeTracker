@@ -152,7 +152,7 @@ class _MyHomePageState extends State<MyHomePage> {
   _showAbout() {
     return showAboutDialog(
         context: context,
-        applicationVersion: 'Prototyp',
+        applicationVersion: 'Wersja prototypowa',
         applicationIcon: Image.asset(
           'assets/VIBETRACKER.png',
           width: 45,
@@ -160,7 +160,7 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
         children: [
           Text(
-              "Podstawowym celem VibeTrackera, jest świadomość zrowia psychicznego użytkownika. W aplikacji możesz opisać swój dzień za pomocą emotek. Możesz też zobaczyć pogode aby zobaczyć czy wpływa ona na twoje samopoczucie.\n\n\n Aplikacja została stworzona podzczas konkursu Hack Heroes 2020 przez 2 uczniów szkoły średniej")
+              "Podstawowym celem VibeTrackera, jest świadomość zrowia psychicznego użytkownika. W aplikacji możesz opisać swój dzień za pomocą emotek. Człowiek w zależności od pogody może mieć inny nastrój. Dlatego w aplikacji jest wbudowana prognoza pogdody.\n\n\n Aplikacja została stworzona podzczas konkursu Hack Heroes 2020 przez 2 uczniów szkoły średniej")
         ]);
   }
 
@@ -214,7 +214,10 @@ class _MyHomePageState extends State<MyHomePage> {
                 Center(
                     child: Padding(
                   padding: const EdgeInsets.fromLTRB(0, 20, 0, 0),
-                  child: Text('Zapisano'),
+                  child: Text(
+                    'Zapisano',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 25),
+                  ),
                 )),
               ],
             ),
@@ -765,7 +768,7 @@ class _CalendarPageState extends State<CalendarPage> {
                   ),
                   RichText(
                     text: TextSpan(
-                      text: "Tekst: ",
+                      text: "Wpisany Tekst: ",
                       style: TextStyle(fontSize: 20, color: Colors.black),
                       children: <TextSpan>[
                         TextSpan(
@@ -808,7 +811,7 @@ class _CalendarPageState extends State<CalendarPage> {
                   ),
                   RichText(
                     text: TextSpan(
-                      text: "Tekst: ",
+                      text: "Wpisany tekst: ",
                       style: TextStyle(fontSize: 20, color: Colors.black),
                       children: <TextSpan>[
                         TextSpan(
@@ -851,7 +854,7 @@ class _CalendarPageState extends State<CalendarPage> {
                   ),
                   RichText(
                     text: TextSpan(
-                      text: "Tekst: ",
+                      text: "Wpisany tekst: ",
                       style: TextStyle(fontSize: 20, color: Colors.black),
                       children: <TextSpan>[
                         TextSpan(
