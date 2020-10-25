@@ -171,7 +171,7 @@ class _MyHomePageState extends State<MyHomePage> {
           content: SingleChildScrollView(
             child: ListBody(
               children: <Widget>[
-                Text('Obecna lokalizajca to:'),
+                Text('Obecna lokalizacja to:'),
                 Text(
                   '$addressDialog',
                   style: TextStyle(fontWeight: FontWeight.bold),
@@ -363,7 +363,7 @@ class _MyHomePageState extends State<MyHomePage> {
             Padding(
               padding: const EdgeInsets.fromLTRB(0, 0, 0, 15),
               child: Text(
-                "Jak sie dzisaj czujesz?",
+                "Jak sie dzisiaj czujesz?",
                 style: TextStyle(
                     color: priColor, fontWeight: FontWeight.bold, fontSize: 16),
               ),
@@ -505,7 +505,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     child: Row(
                       children: [
                         Text(
-                          "Pogda dzisiaj ",
+                          "Pogoda dzisiaj ",
                           style: TextStyle(
                               fontWeight: FontWeight.bold, fontSize: 20),
                         ),
