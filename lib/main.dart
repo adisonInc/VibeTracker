@@ -23,33 +23,33 @@ const whiteColor = Colors.white;
 var now;
 var formatter;
 
-String formattedDate;
+String formattedDate = "brak";
 var formatterFull;
-String formattedDateFull;
+String formattedDateFull = "brak";
 int feelLike = null;
 
-String secondFormattedDate;
+String secondFormattedDate = "brak";
 int secondFeelLike;
-String secondControllerText;
+String secondControllerText = "brak";
 
-String thirdFormattedDate;
+String thirdFormattedDate = "brak";
 int thirdFeelLike;
-String thirdControllerText;
+String thirdControllerText = "brak";
 
 int _saveCounter = 0;
 final _controller = TextEditingController();
 
 void _loadPrefs() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
-  formattedDate = prefs.getString('formattedDate');
+  formattedDate = prefs.getString('formattedDate') ?? "BRAK";
   feelLike = prefs.getInt('feelLike');
   _controller.text = prefs.getString('controllerText');
-  secondFormattedDate = prefs.getString('secondFormattedDate');
+  secondFormattedDate = prefs.getString('secondFormattedDate') ?? "BRAK";
   secondFeelLike = prefs.getInt('secondFeelLike');
-  secondControllerText = prefs.getString('secondControllerText');
-  thirdFormattedDate = prefs.getString('thirdFormattedDate');
+  secondControllerText = prefs.getString('secondControllerText') ?? "BRAK";
+  thirdFormattedDate = prefs.getString('thirdFormattedDate') ?? "BRAK";
   thirdFeelLike = prefs.getInt('thirdFeelLike');
-  thirdControllerText = prefs.getString('thirdControllerText');
+  thirdControllerText = prefs.getString('thirdControllerText') ?? "BRAK";
 }
 
 void _newestSave() async {
@@ -119,9 +119,7 @@ class _MyHomePageState extends State<MyHomePage> {
     super.initState();
     _loadPrefs();
 
-    if (!_locationCheceked) {
-      _getLocation();
-    }
+    _getLocation();
 
     _calendarController = CalendarController();
     _getDay();
@@ -143,7 +141,6 @@ class _MyHomePageState extends State<MyHomePage> {
   String _weatherTemp = "BRAK";
   String _weatherCloud = "BRAK";
   String _weatherPress = "BRAK";
-  bool _locationCheceked = false;
 
   CalendarController _calendarController;
   var _decodedCoords;
@@ -187,6 +184,7 @@ class _MyHomePageState extends State<MyHomePage> {
               child: Text('Odśiweż'),
               onPressed: () {
                 _getLocation();
+                _getAdress();
                 Navigator.of(context).pop();
               },
             ),
@@ -236,8 +234,8 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _getLocation() async {
-    Position position =
-        await getCurrentPosition(desiredAccuracy: LocationAccuracy.low);
+    LocationPermission permission = await Geolocator.requestPermission();
+    Position position = await Geolocator.getCurrentPosition();
     setState(() {
       _location = "${position.latitude}, ${position.longitude}";
       _locationLatStr = "${position.latitude}";
@@ -485,6 +483,7 @@ class _MyHomePageState extends State<MyHomePage> {
             Padding(
               padding: const EdgeInsets.fromLTRB(15, 0, 15, 0),
               child: TextFormField(
+                autofocus: false,
                 controller: _controller,
                 decoration: InputDecoration(
                     border: OutlineInputBorder(),
@@ -519,7 +518,7 @@ class _MyHomePageState extends State<MyHomePage> {
               padding: const EdgeInsets.fromLTRB(20, 0, 0, 0),
               child: RichText(
                 text: TextSpan(
-                  text: "Temp. Odzczuwalna: ",
+                  text: "Temp. Odczuwalna: ",
                   style: TextStyle(fontSize: 20, color: Colors.black),
                   children: <TextSpan>[
                     TextSpan(
@@ -714,129 +713,180 @@ class _CalendarPageState extends State<CalendarPage> {
                   Spacer(
                     flex: 1,
                   ),
-                  RichText(
-                    text: TextSpan(
-                      text: "Ostatni Zapis:\n",
-                      style: TextStyle(fontSize: 20, color: Colors.black),
-                      children: <TextSpan>[
-                        TextSpan(text: 'Data: ', style: TextStyle()),
-                        TextSpan(
-                            text: '$formattedDate\n',
+                  Container(
+                    color: priColor,
+                    width: MediaQuery.of(context).size.width / 1.5,
+                    height: MediaQuery.of(context).size.height / 4,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        RichText(
+                          text: TextSpan(
+                            text: "Ostatni Zapis:\n\n",
                             style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                            )),
-                      ],
-                    ),
-                  ),
-                  Row(
-                    children: [
-                      Text("Samopoczucie:  ",
-                          style: TextStyle(fontSize: 20, color: Colors.black)),
-                      ClipOval(
-                        child: Container(
-                          width: 50,
-                          height: 50,
-                          child: Image.asset(newestImg),
+                                fontSize: 20,
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold),
+                            children: <TextSpan>[
+                              TextSpan(
+                                  text: 'Data: ',
+                                  style:
+                                      TextStyle(fontWeight: FontWeight.normal)),
+                              TextSpan(
+                                  text: '$formattedDate', style: TextStyle()),
+                            ],
+                          ),
                         ),
-                      )
-                    ],
-                  ),
-                  RichText(
-                    text: TextSpan(
-                      text: "Wpisany tekst: ",
-                      style: TextStyle(fontSize: 20, color: Colors.black),
-                      children: <TextSpan>[
-                        TextSpan(
-                            text: '${_controller.text}\n',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                            )),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text("Samopoczucie:  ",
+                                style: TextStyle(
+                                    fontSize: 20, color: Colors.white)),
+                            ClipOval(
+                              child: Container(
+                                width: 50,
+                                height: 50,
+                                child: Image.asset(newestImg),
+                              ),
+                            )
+                          ],
+                        ),
+                        RichText(
+                          text: TextSpan(
+                            text: "Wpisany tekst: ",
+                            style: TextStyle(fontSize: 20, color: Colors.white),
+                            children: <TextSpan>[
+                              TextSpan(
+                                  text: '${_controller.text}\n',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                  )),
+                            ],
+                          ),
+                        ),
                       ],
                     ),
                   ),
                   Spacer(
                     flex: 1,
                   ),
-                  RichText(
-                    text: TextSpan(
-                      text: "Drugi Zapis:\n",
-                      style: TextStyle(fontSize: 20, color: Colors.black),
-                      children: <TextSpan>[
-                        TextSpan(text: 'Data: ', style: TextStyle()),
-                        TextSpan(
-                            text: '$secondFormattedDate\n',
+                  Container(
+                    color: priColor,
+                    width: MediaQuery.of(context).size.width / 1.5,
+                    height: MediaQuery.of(context).size.height / 4,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        RichText(
+                          text: TextSpan(
+                            text: "Drugi Zapis:\n\n",
                             style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                            )),
-                      ],
-                    ),
-                  ),
-                  Row(
-                    children: [
-                      Text("Samopoczucie:  ",
-                          style: TextStyle(fontSize: 20, color: Colors.black)),
-                      ClipOval(
-                        child: Container(
-                          width: 50,
-                          height: 50,
-                          child: Image.asset(secImg),
+                                fontSize: 20,
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold),
+                            children: <TextSpan>[
+                              TextSpan(
+                                  text: 'Data: ',
+                                  style:
+                                      TextStyle(fontWeight: FontWeight.normal)),
+                              TextSpan(
+                                  text: '$secondFormattedDate',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                  )),
+                            ],
+                          ),
                         ),
-                      )
-                    ],
-                  ),
-                  RichText(
-                    text: TextSpan(
-                      text: "Wpisany tekst: ",
-                      style: TextStyle(fontSize: 20, color: Colors.black),
-                      children: <TextSpan>[
-                        TextSpan(
-                            text: '$secondControllerText\n',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                            )),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text("Samopoczucie:  ",
+                                style: TextStyle(
+                                    fontSize: 20, color: Colors.white)),
+                            ClipOval(
+                              child: Container(
+                                width: 50,
+                                height: 50,
+                                child: Image.asset(secImg),
+                              ),
+                            )
+                          ],
+                        ),
+                        RichText(
+                          text: TextSpan(
+                            text: "Wpisany tekst: ",
+                            style: TextStyle(fontSize: 20, color: Colors.white),
+                            children: <TextSpan>[
+                              TextSpan(
+                                  text: '$secondControllerText\n',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                  )),
+                            ],
+                          ),
+                        ),
                       ],
                     ),
                   ),
                   Spacer(
                     flex: 1,
                   ),
-                  RichText(
-                    text: TextSpan(
-                      text: "Trzeci Zapis:\n",
-                      style: TextStyle(fontSize: 20, color: Colors.black),
-                      children: <TextSpan>[
-                        TextSpan(text: 'Data: ', style: TextStyle()),
-                        TextSpan(
-                            text: '$thirdFormattedDate\n',
+                  Container(
+                    color: priColor,
+                    width: MediaQuery.of(context).size.width / 1.5,
+                    height: MediaQuery.of(context).size.height / 4,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        RichText(
+                          text: TextSpan(
+                            text: "Trzeci Zapis:\n\n",
                             style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                            )),
-                      ],
-                    ),
-                  ),
-                  Row(
-                    children: [
-                      Text("Samopoczucie:  ",
-                          style: TextStyle(fontSize: 20, color: Colors.black)),
-                      ClipOval(
-                        child: Container(
-                          width: 50,
-                          height: 50,
-                          child: Image.asset(thiImg),
+                                fontSize: 20,
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold),
+                            children: <TextSpan>[
+                              TextSpan(
+                                  text: 'Data: ',
+                                  style:
+                                      TextStyle(fontWeight: FontWeight.normal)),
+                              TextSpan(
+                                  text: '$thirdFormattedDate',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                  )),
+                            ],
+                          ),
                         ),
-                      )
-                    ],
-                  ),
-                  RichText(
-                    text: TextSpan(
-                      text: "Wpisany tekst: ",
-                      style: TextStyle(fontSize: 20, color: Colors.black),
-                      children: <TextSpan>[
-                        TextSpan(
-                            text: '$thirdControllerText\n',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                            )),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text("Samopoczucie:  ",
+                                style: TextStyle(
+                                    fontSize: 20, color: Colors.white)),
+                            ClipOval(
+                              child: Container(
+                                width: 50,
+                                height: 50,
+                                child: Image.asset(thiImg),
+                              ),
+                            )
+                          ],
+                        ),
+                        RichText(
+                          text: TextSpan(
+                            text: "Wpisany tekst: ",
+                            style: TextStyle(fontSize: 20, color: Colors.white),
+                            children: <TextSpan>[
+                              TextSpan(
+                                  text: '$thirdControllerText\n',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                  )),
+                            ],
+                          ),
+                        ),
                       ],
                     ),
                   ),
