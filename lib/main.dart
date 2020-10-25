@@ -5,6 +5,8 @@ import 'package:weather/weather.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
+import 'dart:async';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   initializeDateFormatting().then((_) => runApp(MyApp()));
@@ -18,12 +20,79 @@ const betterColor = Color(0xFFaaff00);
 const bestColor = Color(0xFFF33ff00);
 const whiteColor = Colors.white;
 
+var now;
+var formatter;
+
+String formattedDate;
+var formatterFull;
+String formattedDateFull;
+int feelLike = null;
+
+String secondFormattedDate;
+int secondFeelLike;
+String secondControllerText;
+
+String thirdFormattedDate;
+int thirdFeelLike;
+String thirdControllerText;
+
+int _saveCounter = 0;
+final _controller = TextEditingController();
+
+void _loadPrefs() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  formattedDate = prefs.getString('formattedDate');
+  feelLike = prefs.getInt('feelLike');
+  _controller.text = prefs.getString('controllerText');
+  secondFormattedDate = prefs.getString('secondFormattedDate');
+  secondFeelLike = prefs.getInt('secondFeelLike');
+  secondControllerText = prefs.getString('secondControllerText');
+  thirdFormattedDate = prefs.getString('thirdFormattedDate');
+  thirdFeelLike = prefs.getInt('thirdFeelLike');
+  thirdControllerText = prefs.getString('thirdControllerText');
+}
+
+void _newestSave() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  await prefs.setString('formattedDate', formattedDate);
+  await prefs.setInt('feelLike', feelLike);
+  await prefs.setString('controllerText', _controller.text);
+}
+
+void _secondSave() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+
+  secondFormattedDate = prefs.getString('formattedDate');
+  secondFeelLike = prefs.getInt('feelLike');
+
+  secondControllerText = prefs.getString('controllerText');
+  await prefs.setString('secondFormattedDate', secondFormattedDate);
+  await prefs.setInt('secondFeelLike', secondFeelLike);
+  await prefs.setString('secondControllerText', secondControllerText);
+}
+
+void _third() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  thirdFormattedDate = prefs.getString('secondFormattedDate');
+  thirdFeelLike = prefs.getInt('secondFeelLike');
+  thirdControllerText = prefs.getString('secondControllerText');
+  await prefs.setString('thirdFormattedDate', thirdFormattedDate);
+  await prefs.setInt('thirdFeelLike', thirdFeelLike);
+  await prefs.setString('thirdControllerText', thirdControllerText);
+}
+
+void _getSaveCounter() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  await prefs.setInt('_saveCounterShared', _saveCounter);
+  _saveCounter = prefs.getInt('_saveCounterShared');
+}
+
 class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Code week (vibe check)',
+      title: 'VibeTracker',
       theme: ThemeData(
         primaryColor: priColor,
         visualDensity: VisualDensity.adaptivePlatformDensity,
@@ -48,12 +117,12 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
+    _loadPrefs();
+
     if (!_locationCheceked) {
       _getLocation();
     }
-    if (!_weatherCheceked) {
-      _getWeather();
-    }
+
     _calendarController = CalendarController();
     _getDay();
   }
@@ -79,16 +148,21 @@ class _MyHomePageState extends State<MyHomePage> {
   CalendarController _calendarController;
   var _decodedCoords;
   String address;
-  var now;
-  var formatter;
-  String formattedDate;
-  var formattedDateSub;
-  var nowSub;
-  var formatterSub;
-  var formattedDateAdd;
-  var nowAdd;
-  var formatterAdd;
-  final _controller = TextEditingController();
+
+  _showAbout() {
+    return showAboutDialog(
+        context: context,
+        applicationVersion: 'Prototyp',
+        applicationIcon: Image.asset(
+          'assets/VIBETRACKER.png',
+          width: 45,
+          height: 45,
+        ),
+        children: [
+          Text(
+              "Aplikacja służaca do śledzena swojego samopoczucia i zdrowia psychycznigego w oparciu o pogodę")
+        ]);
+  }
 
   Future<void> _showMyDialogLocation() async {
     var addressDialog = address;
@@ -116,6 +190,36 @@ class _MyHomePageState extends State<MyHomePage> {
                 Navigator.of(context).pop();
               },
             ),
+            TextButton(
+              child: Text('Ok'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _showMyDialogSave() async {
+    var addressDialog = address;
+    return showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Center(
+                    child: Padding(
+                  padding: const EdgeInsets.fromLTRB(0, 20, 0, 0),
+                  child: Text('Zapisano'),
+                )),
+              ],
+            ),
+          ),
+          actions: <Widget>[
             TextButton(
               child: Text('Ok'),
               onPressed: () {
@@ -172,13 +276,9 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {
       now = new DateTime.now();
       formatter = new DateFormat('dd');
+      formatterFull = new DateFormat('dd' + '.' + 'MM');
+      formattedDateFull = formatterFull.format(now);
       formattedDate = formatter.format(now);
-      nowSub = new DateTime.now().subtract(new Duration(days: 1));
-      formatterSub = new DateFormat('dd');
-      formattedDateSub = formatter.format(nowSub);
-      nowAdd = new DateTime.now().add(new Duration(days: 1));
-      formatterAdd = new DateFormat('dd');
-      formattedDateAdd = formatter.format(nowAdd);
     });
   }
 
@@ -186,37 +286,9 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
-      drawer: ClipRRect(
-          borderRadius: BorderRadius.only(
-              topRight: Radius.circular(35), bottomRight: Radius.circular(35)),
-          child: Drawer(
-            child: ListView(
-              children: [
-                new Container(
-                  child: new DrawerHeader(
-                      child: Padding(
-                    padding: const EdgeInsets.fromLTRB(10, 40, 0, 0),
-                    child: Text(
-                      "vibe check",
-                      style: TextStyle(color: whiteColor, fontSize: 45),
-                    ),
-                  )),
-                  color: priColor,
-                ),
-                new Container(
-                  color: Colors.blueAccent,
-                  child: new Column(),
-                )
-              ],
-            ),
-          )),
       bottomNavigationBar: BottomAppBar(
         child: Row(
           children: [
-            IconButton(
-                icon: Icon(Icons.menu),
-                color: priColor,
-                onPressed: () => _scaffoldKey.currentState.openDrawer()),
             IconButton(
                 icon: Icon(Icons.calendar_today),
                 color: priColor,
@@ -225,11 +297,9 @@ class _MyHomePageState extends State<MyHomePage> {
                       builder: (BuildContext context) => CalendarPage()));
                 }),
             IconButton(
-                icon: Icon(Icons.notifications),
-                color: priColor,
+                icon: Icon(Icons.location_on, color: priColor),
                 onPressed: () {
-                  Navigator.of(context).push(MaterialPageRoute(
-                      builder: (BuildContext context) => NotificationsPage()));
+                  _showMyDialogLocation();
                 }),
             Spacer(),
             IconButton(
@@ -238,18 +308,33 @@ class _MyHomePageState extends State<MyHomePage> {
                   _getWeather();
                 }),
             IconButton(
-                icon: Icon(Icons.location_on, color: priColor),
+                icon: Icon(Icons.help),
+                color: priColor,
                 onPressed: () {
-                  _showMyDialogLocation();
+                  _showAbout();
                 }),
-            IconButton(
-                icon: Icon(Icons.help), color: priColor, onPressed: () {}),
           ],
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        child: Icon(Icons.theater_comedy),
-        onPressed: () {},
+        child: Icon(Icons.save_sharp),
+        onPressed: () {
+          _getDay();
+          _showMyDialogSave();
+          _newestSave();
+          _getSaveCounter();
+          print(_saveCounter);
+          if (_saveCounter == 1) {
+            _secondSave();
+            print("xd");
+            print(secondControllerText);
+          }
+          if (_saveCounter <= 2) {
+            _secondSave();
+            _third();
+          }
+          _saveCounter++;
+        },
         backgroundColor: priColor,
         elevation: 0,
       ),
@@ -258,7 +343,7 @@ class _MyHomePageState extends State<MyHomePage> {
         automaticallyImplyLeading: false, // ukrycie Hamburgera u góry
         actions: <Widget>[Container()],
         title: Text(
-          "code week (vibecheck)",
+          "Vibe Tracker",
           style: TextStyle(color: whiteColor),
         ),
         elevation: 0,
@@ -267,126 +352,13 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  Flexible(
-                    flex: 1,
-                    child: Container(
-                      width: MediaQuery.of(context).size.width / 5,
-                      height: MediaQuery.of(context).size.height / 10,
-                      color: priColor,
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Column(
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.fromLTRB(0, 0, 38, 0),
-                              child: Text(
-                                "$formattedDateSub",
-                                style: TextStyle(
-                                    color: whiteColor,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 20),
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
-                              child: Text(
-                                "Wczoraj",
-                                style: TextStyle(
-                                    color: whiteColor,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 15),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  Flexible(
-                    flex: 1,
-                    child: Container(
-                      width: MediaQuery.of(context).size.width / 4,
-                      height: MediaQuery.of(context).size.height / 8,
-                      color: priColor,
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Column(
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.fromLTRB(0, 0, 40, 0),
-                              child: Text(
-                                "$formattedDate",
-                                style: TextStyle(
-                                    color: whiteColor,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 25),
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Text(
-                                "Dzisiaj",
-                                style: TextStyle(
-                                    color: whiteColor,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 20),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  Flexible(
-                    flex: 1,
-                    child: Container(
-                      width: MediaQuery.of(context).size.width / 5,
-                      height: MediaQuery.of(context).size.height / 10,
-                      color: priColor,
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Column(
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.fromLTRB(0, 0, 38, 0),
-                              child: Text(
-                                "$formattedDateAdd",
-                                style: TextStyle(
-                                    color: whiteColor,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 20),
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Text(
-                                "Jutro",
-                                style: TextStyle(
-                                    color: whiteColor,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 14),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
             Spacer(
               flex: 1,
             ),
             Padding(
-              padding: const EdgeInsets.fromLTRB(0, 0, 0, 25),
+              padding: const EdgeInsets.fromLTRB(0, 0, 0, 15),
               child: Text(
-                "Jak sie dzisiaj czujesz?",
+                "Jak sie dzisaj czujesz?",
                 style: TextStyle(
                     color: priColor, fontWeight: FontWeight.bold, fontSize: 16),
               ),
@@ -395,71 +367,109 @@ class _MyHomePageState extends State<MyHomePage> {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 ClipOval(
-                  child: Material(
-                    color: worstColor, // button color
-                    child: InkWell(
-                      // inkwell color
-                      child: SizedBox(width: 56, height: 56),
-                      onTap: () {},
+                  child: Container(
+                    width: 65,
+                    height: 65,
+                    color: whiteColor,
+                    child: RaisedButton(
+                      onPressed: () {
+                        setState(() {
+                          feelLike = 1;
+                        });
+                      },
+                      color: whiteColor,
+                      padding: EdgeInsets.all(0.0),
+                      child: Image.asset(
+                        'assets/5.png',
+                        fit: BoxFit.fill,
+                      ),
                     ),
                   ),
                 ),
                 ClipOval(
-                  child: Material(
-                    color: worseColor, // button color
-                    child: InkWell(
-                      // inkwell color
-                      child: SizedBox(
-                        width: 56,
-                        height: 56,
+                  child: Container(
+                    width: 65,
+                    height: 65,
+                    color: whiteColor,
+                    child: RaisedButton(
+                      onPressed: () {
+                        setState(() {
+                          feelLike = 2;
+                        });
+                      },
+                      color: whiteColor,
+                      padding: EdgeInsets.all(0.0),
+                      child: Image.asset(
+                        'assets/4.png',
+                        fit: BoxFit.fill,
                       ),
-                      onTap: () {},
                     ),
                   ),
                 ),
                 ClipOval(
-                  child: Material(
-                    color: mediColor, // button color
-                    child: InkWell(
-                      // inkwell color
-                      child: SizedBox(
-                        width: 56,
-                        height: 56,
+                  child: Container(
+                    width: 65,
+                    height: 65,
+                    color: whiteColor,
+                    child: RaisedButton(
+                      onPressed: () {
+                        setState(() {
+                          feelLike = 3;
+                        });
+                      },
+                      color: whiteColor,
+                      padding: EdgeInsets.all(0.0),
+                      child: Image.asset(
+                        'assets/3.png',
+                        fit: BoxFit.fill,
                       ),
-                      onTap: () {},
                     ),
                   ),
                 ),
                 ClipOval(
-                  child: Material(
-                    color: betterColor, // button color
-                    child: InkWell(
-                      // inkwell color
-                      child: SizedBox(
-                        width: 56,
-                        height: 56,
+                  child: Container(
+                    width: 65,
+                    height: 65,
+                    color: whiteColor,
+                    child: RaisedButton(
+                      onPressed: () {
+                        setState(() {
+                          feelLike = 4;
+                        });
+                      },
+                      color: whiteColor,
+                      padding: EdgeInsets.all(0.0),
+                      child: Image.asset(
+                        'assets/2.png',
+                        fit: BoxFit.fill,
                       ),
-                      onTap: () {},
                     ),
                   ),
                 ),
                 ClipOval(
-                  child: Material(
-                    color: bestColor, // button color
-                    child: InkWell(
-                      // inkwell color
-                      child: SizedBox(
-                        width: 56,
-                        height: 56,
+                  child: Container(
+                    width: 65,
+                    height: 65,
+                    color: whiteColor,
+                    child: RaisedButton(
+                      onPressed: () {
+                        setState(() {
+                          feelLike = 5;
+                        });
+                      },
+                      color: whiteColor,
+                      padding: EdgeInsets.all(0.0),
+                      child: Image.asset(
+                        'assets/1.png',
+                        fit: BoxFit.fill,
                       ),
-                      onTap: () {},
                     ),
                   ),
-                )
+                ),
               ],
             ),
             Spacer(
-              flex: 1,
+              flex: 2,
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(0, 0, 0, 15),
@@ -480,18 +490,25 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
             ),
             Spacer(
-              flex: 1,
+              flex: 2,
             ),
             Row(
               children: [
                 Padding(
                     padding: const EdgeInsets.fromLTRB(20, 0, 0, 0),
-                    child: Text(
-                      "Pogda dzisiaj:",
-                      style: TextStyle(
-                          color: priColor,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 20),
+                    child: Row(
+                      children: [
+                        Text(
+                          "Pogda dzisiaj ",
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 20),
+                        ),
+                        Text(
+                          "($formattedDateFull): ",
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 20),
+                        ),
+                      ],
                     )),
               ],
             ),
@@ -553,6 +570,11 @@ class NotificationsPage extends StatefulWidget {
 
 class _NotificationsPageState extends State<NotificationsPage> {
   @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Container(
       child: Scaffold(
@@ -573,9 +595,280 @@ class CalendarPage extends StatefulWidget {
 
 class _CalendarPageState extends State<CalendarPage> {
   @override
+  void initState() {
+    super.initState();
+    switch (feelLike) {
+      case 1:
+        {
+          setState(() {
+            newestImg = 'assets/5.png';
+          });
+        }
+        break;
+      case 2:
+        {
+          setState(() {
+            newestImg = 'assets/4.png';
+          });
+        }
+        break;
+      case 3:
+        {
+          setState(() {
+            newestImg = 'assets/3.png';
+          });
+        }
+        break;
+      case 4:
+        {
+          setState(() {
+            newestImg = 'assets/2.png';
+          });
+        }
+        break;
+      case 5:
+        {
+          setState(() {
+            newestImg = 'assets/1.png';
+          });
+        }
+        break;
+    }
+
+    switch (secondFeelLike) {
+      case 1:
+        {
+          setState(() {
+            secImg = 'assets/5.png';
+          });
+        }
+        break;
+      case 2:
+        {
+          setState(() {
+            secImg = 'assets/4.png';
+          });
+        }
+        break;
+      case 3:
+        {
+          setState(() {
+            secImg = 'assets/3.png';
+          });
+        }
+        break;
+      case 4:
+        {
+          setState(() {
+            secImg = 'assets/2.png';
+          });
+        }
+        break;
+      case 5:
+        {
+          setState(() {
+            secImg = 'assets/1.png';
+          });
+        }
+        break;
+    }
+
+    switch (thirdFeelLike) {
+      case 1:
+        {
+          setState(() {
+            thiImg = 'assets/5.png';
+          });
+        }
+        break;
+      case 2:
+        {
+          setState(() {
+            thiImg = 'assets/4.png';
+          });
+        }
+        break;
+      case 3:
+        {
+          setState(() {
+            thiImg = 'assets/3.png';
+          });
+        }
+        break;
+      case 4:
+        {
+          setState(() {
+            thiImg = 'assets/2.png';
+          });
+        }
+        break;
+      case 5:
+        {
+          setState(() {
+            thiImg = 'assets/1.png';
+          });
+        }
+
+        break;
+    }
+  }
+
+  String newestImg = "brak";
+  String secImg = "brak";
+  String thiImg = "brak";
+  @override
   Widget build(BuildContext context) {
     return Container(
-      child: Scaffold(),
+      child: Scaffold(
+          appBar: AppBar(
+            title: Text(
+              "Vibe Tracker",
+              style: TextStyle(color: whiteColor),
+            ),
+            elevation: 0,
+          ),
+          body: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Spacer(
+                    flex: 1,
+                  ),
+                  RichText(
+                    text: TextSpan(
+                      text: "Ostatni Zapis:\n",
+                      style: TextStyle(fontSize: 20, color: Colors.black),
+                      children: <TextSpan>[
+                        TextSpan(text: 'Data: ', style: TextStyle()),
+                        TextSpan(
+                            text: '$formattedDate\n',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                            )),
+                      ],
+                    ),
+                  ),
+                  Row(
+                    children: [
+                      Text("Samopoczucie:  ",
+                          style: TextStyle(fontSize: 20, color: Colors.black)),
+                      ClipOval(
+                        child: Container(
+                          width: 50,
+                          height: 50,
+                          child: Image.asset(newestImg),
+                        ),
+                      )
+                    ],
+                  ),
+                  RichText(
+                    text: TextSpan(
+                      text: "Tekst: ",
+                      style: TextStyle(fontSize: 20, color: Colors.black),
+                      children: <TextSpan>[
+                        TextSpan(
+                            text: '${_controller.text}\n',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                            )),
+                      ],
+                    ),
+                  ),
+                  Spacer(
+                    flex: 1,
+                  ),
+                  RichText(
+                    text: TextSpan(
+                      text: "Drugi Zapis:\n",
+                      style: TextStyle(fontSize: 20, color: Colors.black),
+                      children: <TextSpan>[
+                        TextSpan(text: 'Data: ', style: TextStyle()),
+                        TextSpan(
+                            text: '$secondFormattedDate\n',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                            )),
+                      ],
+                    ),
+                  ),
+                  Row(
+                    children: [
+                      Text("Samopoczucie:  ",
+                          style: TextStyle(fontSize: 20, color: Colors.black)),
+                      ClipOval(
+                        child: Container(
+                          width: 50,
+                          height: 50,
+                          child: Image.asset(secImg),
+                        ),
+                      )
+                    ],
+                  ),
+                  RichText(
+                    text: TextSpan(
+                      text: "Tekst: ",
+                      style: TextStyle(fontSize: 20, color: Colors.black),
+                      children: <TextSpan>[
+                        TextSpan(
+                            text: '$secondControllerText\n',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                            )),
+                      ],
+                    ),
+                  ),
+                  Spacer(
+                    flex: 1,
+                  ),
+                  RichText(
+                    text: TextSpan(
+                      text: "Trzeci Zapis:\n",
+                      style: TextStyle(fontSize: 20, color: Colors.black),
+                      children: <TextSpan>[
+                        TextSpan(text: 'Data: ', style: TextStyle()),
+                        TextSpan(
+                            text: '$thirdFormattedDate\n',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                            )),
+                      ],
+                    ),
+                  ),
+                  Row(
+                    children: [
+                      Text("Samopoczucie:  ",
+                          style: TextStyle(fontSize: 20, color: Colors.black)),
+                      ClipOval(
+                        child: Container(
+                          width: 50,
+                          height: 50,
+                          child: Image.asset(thiImg),
+                        ),
+                      )
+                    ],
+                  ),
+                  RichText(
+                    text: TextSpan(
+                      text: "Tekst: ",
+                      style: TextStyle(fontSize: 20, color: Colors.black),
+                      children: <TextSpan>[
+                        TextSpan(
+                            text: '$thirdControllerText\n',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                            )),
+                      ],
+                    ),
+                  ),
+                  Spacer(
+                    flex: 1,
+                  ),
+                ],
+              ),
+            ],
+          )),
     );
   }
 }
