@@ -144,7 +144,7 @@ class _MyHomePageState extends State<MyHomePage> {
   String _weatherCloud = "BRAK";
   String _weatherPress = "BRAK";
   bool _locationCheceked = false;
-  bool _weatherCheceked = false;
+
   CalendarController _calendarController;
   var _decodedCoords;
   String address;
@@ -160,7 +160,7 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
         children: [
           Text(
-              "Aplikacja służaca do śledzena swojego samopoczucia i zdrowia psychycznigego w oparciu o pogodę")
+              "Podstawowym celem VibeTrackera, jest świadomość zrowia psychicznego użytkownika. W aplikacji możesz opisać swój dzień za pomocą emotek. Możesz też zobaczyć pogode aby zobaczyć czy wpływa ona na twoje samopoczucie.\n\n\n Aplikacja została stworzona podzczas konkursu Hack Heroes 2020 przez 2 uczniów szkoły średniej")
         ]);
   }
 
